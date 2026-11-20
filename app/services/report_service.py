@@ -45,11 +45,24 @@ def encode_overview(overview:str)->list[float]:
 
 def categories(db:Session)->dict:
     """TODO B-04 · categories() — mentor와 동일한 함수 계약을 완성하세요."""
-    # TODO B-04: report_categories를 PK 오름차순으로 읽어 category_id/code/name/description의
+    # TODO B-04: report_categories를 PK 오름차순으로 읽어
+    # category_id/code/name/description의
     # TODO B-04: items 리스트를 반환하세요.
     # 입력·반환형과 예외·상태코드는 요구사항 명세서/API 계약을 참조합니다.
     # 정답 구현 후 아래 예외를 지우고 로직을 작성하세요.
-    raise NotImplementedError("B-04 · categories() TODO 미완성")
+    rows = db.scalars(
+        select(ReportCategory).order_by(ReportCategory.category_id.asc())
+    ).all()
+    return {
+        "items" : [
+            {
+            "category_id" : row.category_id,
+            "code": row.code,
+            "name": row.name,
+            "description": row.description
+        } for row in rows
+        ] 
+    }
 
 
 def create_report(db:Session,data:ReportCreate)->dict:
@@ -59,6 +72,8 @@ def create_report(db:Session,data:ReportCreate)->dict:
     # 선행 작업: embedding_client.encode()와 encode_overview()를 먼저 완성하세요.
     # 입력·반환형과 예외·상태코드는 요구사항 명세서/API 계약을 참조합니다.
     # 정답 구현 후 아래 예외를 지우고 로직을 작성하세요.
+
+
     raise NotImplementedError("B-05 · create_report() TODO 미완성")
 
 
@@ -67,7 +82,19 @@ def get_report(db:Session,rid:int)->dict:
     # TODO B-06: Repository에서 공통 보고서와 올바른 상세 행을 가져와 API JSON으로 반환하세요.
     # 입력·반환형과 예외·상태코드는 요구사항 명세서/API 계약을 참조합니다.
     # 정답 구현 후 아래 예외를 지우고 로직을 작성하세요.
-    raise NotImplementedError("B-06 · get_report() TODO 미완성")
+    row = db.scalar(
+            select(Report).where(Report.report_id == rid)
+    )
+
+    return {
+        "item" : {
+            "report_id" : row.report_id,
+            "category_id": row.category_id,
+            "overview": row.overview,
+            "index_status": row.index_status,
+            "revision": row.revision
+        }
+    }
 
 
 def list_reports(db:Session,title:str|None,limit:int,offset:int,
@@ -76,7 +103,14 @@ def list_reports(db:Session,title:str|None,limit:int,offset:int,
     # TODO B-07: Repository의 title 필터·최신 수정일 정렬·limit/offset 페이징을 호출하세요.
     # 입력·반환형과 예외·상태코드는 요구사항 명세서/API 계약을 참조합니다.
     # 정답 구현 후 아래 예외를 지우고 로직을 작성하세요.
-    raise NotImplementedError("B-07 · list_reports() TODO 미완성")
+    return repo.list_reports(
+        db=db,
+        title=title,
+        limit=limit,
+        offset=offset,
+        category_code=category_code,
+        updated_after=updated_after,
+    )
 
 
 def update_report(db:Session,rid:int,data:ReportUpdate)->dict:

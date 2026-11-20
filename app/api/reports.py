@@ -17,7 +17,8 @@ def categories(db:Session=Depends(get_db)):
     # TODO B-04: ReportService의 카테고리 목록 조회 함수를 호출하고 items 배열을 반환하세요.
     # 입력·반환형과 예외·상태코드는 요구사항 명세서/API 계약을 참조합니다.
     # 정답 구현 후 아래 예외를 지우고 로직을 작성하세요.
-    raise NotImplementedError("B-04 · categories() TODO 미완성")
+    items = report_service.categories(db=db)
+    return items
 
 @router.post('/reports',status_code=201)
 def create_report(body:ReportCreate,db:Session=Depends(get_db)):
@@ -26,6 +27,8 @@ def create_report(body:ReportCreate,db:Session=Depends(get_db)):
     # TODO B-05: 201 계약을 유지합니다.
     # 입력·반환형과 예외·상태코드는 요구사항 명세서/API 계약을 참조합니다.
     # 정답 구현 후 아래 예외를 지우고 로직을 작성하세요.
+
+
     raise NotImplementedError("B-05 · create_report() TODO 미완성")
 
 @router.get('/reports')
@@ -37,7 +40,20 @@ def list_reports(title:str|None=None,limit:int=Query(20,ge=1,le=100),
     # TODO B-07: 필터를 거절합니다.
     # 입력·반환형과 예외·상태코드는 요구사항 명세서/API 계약을 참조합니다.
     # 정답 구현 후 아래 예외를 지우고 로직을 작성하세요.
-    raise NotImplementedError("B-07 · list_reports() TODO 미완성")
+    if not at_least("intermediate") and (
+        category_code is not None or updated_after is not None
+    ):
+        raise DomainError(422, "VALIDATION_ERROR", "추가 필터는 Intermediate 기능입니다.")
+
+    return report_service.list_reports(
+        db=db,
+        title=title,
+        limit=limit,
+        offset=offset,
+        category_code=category_code,
+        updated_after=updated_after,
+    )
+    
 
 @router.get('/reports/{report_id}')
 def get_report(report_id:int=Path(ge=1),db:Session=Depends(get_db)):
@@ -45,7 +61,9 @@ def get_report(report_id:int=Path(ge=1),db:Session=Depends(get_db)):
     # TODO B-06: 경로 report_id로 조회한 응답을 반환하세요. 미존재 ID는 DomainError 404를 유지합니다.
     # 입력·반환형과 예외·상태코드는 요구사항 명세서/API 계약을 참조합니다.
     # 정답 구현 후 아래 예외를 지우고 로직을 작성하세요.
-    raise NotImplementedError("B-06 · get_report() TODO 미완성")
+    item = report_service.get_report(db=db, rid=report_id)
+    
+    return item
 
 @router.put('/reports/{report_id}')
 def update_report(body:ReportUpdate,report_id:int=Path(ge=1),db:Session=Depends(get_db)):
